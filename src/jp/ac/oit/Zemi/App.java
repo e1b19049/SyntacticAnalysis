@@ -1,13 +1,20 @@
 package jp.ac.oit.Zemi;
 
-import java.util.ArrayList;
+import java.io.BufferedReader;
+import java.io.IOException;
 
 public class App {
 	public static void main(String[] args) {
-		ArrayList<String> tokenList = TokenList.makeTokenList();
+		BufferedReader bufferedReader = new ReadToken().openBufferedReader();
+		String token;
 		
-		for(String token : tokenList) {
-			System.out.println(token);
+		try {
+			while((token = bufferedReader.readLine()) != null) {
+				System.out.println(token);
+			}
+			bufferedReader.close();
+		}catch(IOException e) {
+			System.out.println(e);
 		}
 	}
 }
