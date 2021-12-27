@@ -27,9 +27,9 @@ public class SyntacticAnalysis {
 	final static String assign = "22";
 	
 	static int current = 0;
-	static ArrayList<String> tokenList;
+	static ArrayList<Token> tokenList;
 	
-	public static void start(ArrayList<String> input) throws NotCorrectToken {
+	public static void start(ArrayList<Token> input) throws NotCorrectToken {
 		tokenList = input;
 		while(tokenList.size() != current) {
 			checkProgram();
@@ -37,7 +37,7 @@ public class SyntacticAnalysis {
 	}
 	
 	private static String getCurrentToken(int mode) {
-		String token = tokenList.get(current);
+		String token = tokenList.get(current).id;
 		if(mode != 0) {
 			//0‚Ì‚Æ‚«‚ÍŒ©‚é‚¾‚¯
 			current++;
@@ -45,10 +45,17 @@ public class SyntacticAnalysis {
 		return token;
 	}
 	
+	private static String errorLine() {
+		if(tokenList.get(current).line == null) {
+			return null;
+		}
+		return "At Line: " + tokenList.get(current).line;
+	}
+	
 	private static void checkProgram() throws NotCorrectToken {
 		checkInterpretiveUnit();
 		if(!getCurrentToken(1).equals(semi_colon)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 	}
 	 
@@ -66,21 +73,21 @@ public class SyntacticAnalysis {
 		}else if(token.equals(repeat)) {
 			checkRepeatSentence();
 		}else {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 	}
 	
 	private static void checkVarAssignment() throws NotCorrectToken {
 		checkVarName();
 		if(!getCurrentToken(1).equals(assign)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 		checkFormula();
 	}
 	
 	private static void checkVarName() throws NotCorrectToken {
 		if(!getCurrentToken(1).equals(identifier)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 	}
 	
@@ -111,7 +118,7 @@ public class SyntacticAnalysis {
 			getCurrentToken(1);
 			checkFormula();
 			if(!getCurrentToken(1).equals(r_par)) {
-				throw new NotCorrectToken(null);
+				throw new NotCorrectToken(errorLine());
 			}
 		}else if(token.equals(integer)) {
 			getCurrentToken(1);
@@ -122,13 +129,13 @@ public class SyntacticAnalysis {
 		}else if(token.equals(at)) {
 			checkCallFunction();
 		}else {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 	}
 	
 	private static void checkVarDeclaration() throws NotCorrectToken {
 		if(!getCurrentToken(1).equals(var)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 		checkVarName();
 		if(getCurrentToken(0).equals(assign)) {
@@ -139,35 +146,35 @@ public class SyntacticAnalysis {
 	
 	private static void checkVarInput() throws NotCorrectToken {
 		if(!getCurrentToken(1).equals(read)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 		if(!getCurrentToken(1).equals(l_par)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 		checkVarName();
 		if(!getCurrentToken(1).equals(r_par)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 	}
 	
 	private static void checkOutputSpecification() throws NotCorrectToken {
 		String token = getCurrentToken(1);
 		if(!token.equals(print) && !token.equals(println)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 		token = getCurrentToken(1);
 		if(!token.equals(l_par)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 		checkOutputUnitLine();
 		token = getCurrentToken(1);
 		if(!token.equals(r_par)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 	}
 	
 	private static void checkOutputUnitLine() throws NotCorrectToken {
-		if(tokenList.get(current).equals(r_par)) {
+		if(tokenList.get(current).id.equals(r_par)) {
 			return;
 		}
 		checkOutputUnit();
@@ -191,7 +198,7 @@ public class SyntacticAnalysis {
 	
 	private static void checkRepeatSentence() throws NotCorrectToken {
 		if(!getCurrentToken(1).equals(repeat)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 		checkFormula();
 		checkVarAssignment();
@@ -199,21 +206,21 @@ public class SyntacticAnalysis {
 	
 	private static void checkCallFunction() throws NotCorrectToken {
 		if(!getCurrentToken(1).equals(at)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 		checkFunctionName();
 		if(!getCurrentToken(1).equals(l_par)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 		checkFormulaLine();
 		if(!getCurrentToken(1).equals(r_par)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 	}
 	
 	private static void checkFunctionName() throws NotCorrectToken {
 		if(!getCurrentToken(1).equals(identifier)) {
-			throw new NotCorrectToken(null);
+			throw new NotCorrectToken(errorLine());
 		}
 	}
 	
