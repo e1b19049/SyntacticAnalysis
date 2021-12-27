@@ -31,18 +31,18 @@ public class SyntacticAnalysis {
 	
 	public static void start(ArrayList<Token> input) throws NotCorrectToken {
 		tokenList = input;
-		while(tokenList.size() != current) {
+		while(tokenList.size() > current) {
 			checkProgram();
 		}
 	}
 	
-	private static String getCurrentToken(int mode) {
-		String token = tokenList.get(current).id;
-		if(mode != 0) {
-			//0‚Ì‚Æ‚«‚ÍŒ©‚é‚¾‚¯
-			current++;
+	private static String getCurrentToken() throws NotCorrectToken {
+		try {
+			return tokenList.get(current).id;
+		}catch(IndexOutOfBoundsException e) {
+			current--;
+			throw new NotCorrectToken(errorLine());
 		}
-		return token;
 	}
 	
 	private static String errorLine() {
@@ -54,13 +54,15 @@ public class SyntacticAnalysis {
 	
 	private static void checkProgram() throws NotCorrectToken {
 		checkInterpretiveUnit();
-		if(!getCurrentToken(1).equals(semi_colon)) {
+		if(!getCurrentToken().equals(semi_colon)) {
+			current--;
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 	}
 	 
 	private static void checkInterpretiveUnit() throws NotCorrectToken {
-		String token = getCurrentToken(0);
+		String token = getCurrentToken();
 		
 		if(token.equals(identifier)) {
 			checkVarAssignment();
@@ -79,51 +81,54 @@ public class SyntacticAnalysis {
 	
 	private static void checkVarAssignment() throws NotCorrectToken {
 		checkVarName();
-		if(!getCurrentToken(1).equals(assign)) {
+		if(!getCurrentToken().equals(assign)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 		checkFormula();
 	}
 	
 	private static void checkVarName() throws NotCorrectToken {
-		if(!getCurrentToken(1).equals(identifier)) {
+		if(!getCurrentToken().equals(identifier)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 	}
 	
 	private static void checkFormula() throws NotCorrectToken{
-		String token = getCurrentToken(0);
+		String token = getCurrentToken();
 		if(token.equals(plus) || token.equals(minus)) {
-			token = getCurrentToken(1);
+			current++;
 		}
 		checkTerm();
-		if(getCurrentToken(0).equals(plus) || getCurrentToken(0).equals(minus)) {
+		if(getCurrentToken().equals(plus) || getCurrentToken().equals(minus)) {
 			checkFormula();
 		}
 	}
 	
 	private static void checkTerm() throws NotCorrectToken {
 		checkFactor();
-		if(getCurrentToken(0).equals(asterisk) || getCurrentToken(0).equals(slash) 
-				|| getCurrentToken(0).equals(div) || getCurrentToken(0).equals(percent)) {
-			getCurrentToken(1);
+		if(getCurrentToken().equals(asterisk) || getCurrentToken().equals(slash) 
+				|| getCurrentToken().equals(div) || getCurrentToken().equals(percent)) {
+			current++;
 			checkTerm();
 		}
 	}
 	
 	private static void checkFactor() throws NotCorrectToken {
-		String token = getCurrentToken(0);
+		String token = getCurrentToken();
 		
 		if(token.equals(l_par)) {
-			getCurrentToken(1);
+			current++;
 			checkFormula();
-			if(!getCurrentToken(1).equals(r_par)) {
+			if(!getCurrentToken().equals(r_par)) {
 				throw new NotCorrectToken(errorLine());
 			}
+			current++;
 		}else if(token.equals(integer)) {
-			getCurrentToken(1);
+			current++;
 		}else if(token.equals(realNum)) {
-			getCurrentToken(1);
+			current++;
 		}else if(token.equals(identifier)) {
 			checkVarName();
 		}else if(token.equals(at)) {
@@ -134,43 +139,47 @@ public class SyntacticAnalysis {
 	}
 	
 	private static void checkVarDeclaration() throws NotCorrectToken {
-		if(!getCurrentToken(1).equals(var)) {
+		if(!getCurrentToken().equals(var)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 		checkVarName();
-		if(getCurrentToken(0).equals(assign)) {
-			getCurrentToken(1);
+		if(getCurrentToken().equals(assign)) {
+			current++;
 			checkFormula();
 		}
 	}
 	
 	private static void checkVarInput() throws NotCorrectToken {
-		if(!getCurrentToken(1).equals(read)) {
+		if(!getCurrentToken().equals(read)) {
 			throw new NotCorrectToken(errorLine());
 		}
-		if(!getCurrentToken(1).equals(l_par)) {
+		current++;
+		if(!getCurrentToken().equals(l_par)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 		checkVarName();
-		if(!getCurrentToken(1).equals(r_par)) {
+		if(!getCurrentToken().equals(r_par)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 	}
 	
 	private static void checkOutputSpecification() throws NotCorrectToken {
-		String token = getCurrentToken(1);
-		if(!token.equals(print) && !token.equals(println)) {
+		if(!getCurrentToken().equals(print) && !getCurrentToken().equals(println)) {
 			throw new NotCorrectToken(errorLine());
 		}
-		token = getCurrentToken(1);
-		if(!token.equals(l_par)) {
+		current++;
+		if(!getCurrentToken().equals(l_par)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 		checkOutputUnitLine();
-		token = getCurrentToken(1);
-		if(!token.equals(r_par)) {
+		if(!getCurrentToken().equals(r_par)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 	}
 	
 	private static void checkOutputUnitLine() throws NotCorrectToken {
@@ -178,18 +187,18 @@ public class SyntacticAnalysis {
 			return;
 		}
 		checkOutputUnit();
-		if(getCurrentToken(0).equals(comma)) {
-			getCurrentToken(1);
+		if(getCurrentToken().equals(comma)) {
+			current++;
 			checkOutputUnitLine();
 		}
 	}
 	
 	private static void checkOutputUnit() throws NotCorrectToken {
-		if(getCurrentToken(0).equals(sentence)) {
-			getCurrentToken(1);
+		if(getCurrentToken().equals(sentence)) {
+			current++;
 			return;
 		}
-		String token = getCurrentToken(0);
+		String token = getCurrentToken();
 		if(token.equals(plus) || token.equals(minus) || token.equals(l_par) 
 				|| token.equals(integer) || token.equals(realNum) || token.equals(identifier) || token.equals(at)) {
 			checkFormula();
@@ -197,40 +206,45 @@ public class SyntacticAnalysis {
 	}
 	
 	private static void checkRepeatSentence() throws NotCorrectToken {
-		if(!getCurrentToken(1).equals(repeat)) {
+		if(!getCurrentToken().equals(repeat)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 		checkFormula();
 		checkVarAssignment();
 	}
 	
 	private static void checkCallFunction() throws NotCorrectToken {
-		if(!getCurrentToken(1).equals(at)) {
+		if(!getCurrentToken().equals(at)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 		checkFunctionName();
-		if(!getCurrentToken(1).equals(l_par)) {
+		if(!getCurrentToken().equals(l_par)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 		checkFormulaLine();
-		if(!getCurrentToken(1).equals(r_par)) {
+		if(!getCurrentToken().equals(r_par)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 	}
 	
 	private static void checkFunctionName() throws NotCorrectToken {
-		if(!getCurrentToken(1).equals(identifier)) {
+		if(!getCurrentToken().equals(identifier)) {
 			throw new NotCorrectToken(errorLine());
 		}
+		current++;
 	}
 	
 	private static void checkFormulaLine() throws NotCorrectToken {
-		if(getCurrentToken(0).equals(r_par)) {
+		if(getCurrentToken().equals(r_par)) {
 			return;
 		}
 		checkFormula();
-		if(getCurrentToken(0).equals(comma)) {
-			getCurrentToken(1);
+		if(getCurrentToken().equals(comma)) {
+			current++;
 			checkFormulaLine();
 		}
 	}
