@@ -19,8 +19,8 @@ public class TokenList {
 		scanner.close();
 
 		try {
-			File file = new File("res/" + fileName);
-			//File file = new File(fileName); //jarのときはこっち
+			//File file = new File("res/" + fileName);
+			File file = new File(fileName); //jarのときはこっち
 			BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
 			
 			/*1行目で入力ファイルの形式を判断
